@@ -7,6 +7,7 @@ from uuid import UUID, uuid4
 from typing import Optional
 import json
 
+
 # ✅ Consolidated Imports (Added dbt_utils)
 from app.api.router import route_intent
 from app.llm.ollama import call_llm_stream 
@@ -17,7 +18,10 @@ from app.db import (
     get_all_chats, 
     get_messages, 
     get_db_schema, 
-    run_read_only_sql
+    run_read_only_sql,
+    delete_chat,
+    delete_all_history
+
 )
 
 # Setup Paths
@@ -56,9 +60,11 @@ def root():
     return FileResponse(str(WEB_DIR / "index.html"))
 
 # Handle favicon to clean logs
+# ✅ UPDATED: Serve the real logo as the favicon
+# ✅ UPDATED: Serve the cropped icon for the browser tab
 @app.get("/favicon.ico", include_in_schema=False)
 async def favicon():
-    return {"status": "no icon"}
+    return FileResponse(str(WEB_DIR / "logo_dea.png"))
 
 # --- Sidebar Endpoints ---
 @app.get("/chats")
@@ -105,6 +111,14 @@ def fix_sql(req: FixSQLRequest):
     cleaned_sql = full_fixed_sql.replace("```sql", "").replace("```", "").strip()
     return {"fixed_query": cleaned_sql}
 
+
+
+
+# ✅ NEW: Endpoint to delete a single chat
+@app.delete("/chats/{chat_id}")
+def remove_chat(chat_id: str):
+    delete_chat(chat_id)
+    return {"status": "deleted", "id": chat_id}
 # --- Main Chat Endpoint ---
 @app.post("/chat")
 def chat(req: ChatRequest):
@@ -162,3 +176,4 @@ def chat(req: ChatRequest):
         insert_message(chat_id_str, "assistant", full_response, scope=routed["scope"])
 
     return StreamingResponse(answer_generator(), media_type="text/plain")
+
