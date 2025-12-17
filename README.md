@@ -98,5 +98,34 @@ uvicorn app.api.main:app --reload
 
 **5.** **Execution (Optional):** If SQL is generated, the "Run Query" button becomes active.
 
+## 🛠️ Development
+```bash
+# Install development tools
+pip install pytest black flake8
 
+# Run DB Initialization manually
+python -c "from app.db import init_db; init_db()"
+```
 
+## Project Structure
+```bash
+de-ai-assistant/
+├── app/
+│   ├── api/          # FastAPI Routes & Logic
+│   ├── db.py         # SQL Server & Schema Logic
+│   ├── llm/          # Ollama Integration
+│   └── web/          # Frontend (HTML/JS/CSS)
+├── data/             # Vector Store (ChromaDB)
+├── .env              # Configuration
+└── main.py           # Entry point
+```
+
+## 🔒 Security Guardrails
+```bash
+Guardrail,Implementation
+SQL Safety,"Regex blocks on DROP, DELETE, UPDATE, ALTER."
+Prompt Injection,"System prompts enforce strict ""Data Engineering Scope""."
+Output Sanitization,HTML escaping prevents XSS in the frontend.
+```
+
+**Author:**  **Wassim Elmoufakkir** *junior Data Engineer for AI*
