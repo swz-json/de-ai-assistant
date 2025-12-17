@@ -87,14 +87,16 @@ uvicorn app.api.main:app --reload
 
 **3.** **Context Injection:**
 
- **+ Memory:** Fetches last 10 messages from SQL Server.
+   **+ Memory:** Fetches last 10 messages from SQL Server.
  
- **+ Schema:** Queries live DB metadata.
+   **+ Schema:** Queries live DB metadata.
  
- **+ Docs:** Queries ChromaDB vector store.
+  **+ Docs:** Queries ChromaDB vector store.
+
 
 **4.** **Inference:** Ollama processes the prompt + context.
 
 **5.** **Execution (Optional):** If SQL is generated, the "Run Query" button becomes active.
+
 
 
