@@ -1,16 +1,20 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>DE AI Assistant</title>
-  <link rel="stylesheet" href="/static/styles.css" />
+  
+  <link rel="icon" type="image/png" href="/static/logo_dea.png" />
+  
+  <link rel="stylesheet" href="/static/styles.css?v=3" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
-      <div class="dot"></div>
+      <img src="/static/logo_dea.png" alt="DEA Logo" class="logo" style="height: 45px; width: auto; margin-right: 15px;" />
+      
       <div>
         <div class="title">DE AI Assistant</div>
         <div class="subtitle">Airflow · dbt · BigQuery · SQL · DQ</div>
@@ -47,7 +51,7 @@
       <div id="status" class="status"></div>
     </section>
   </main>
-  
+
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
