@@ -1,4 +1,4 @@
-﻿import os
+import os
 import pyodbc
 
 # Using Driver 17 as confirmed
@@ -50,26 +50,21 @@ def insert_message(chat_id, role, content, scope=None):
     except Exception as e:
         print(f"❌ DB Insert Error: {e}")
 
-# ✅ NEW: Get list of unique chats for the Sidebar
 def get_all_chats():
     try:
         with get_conn() as cn:
             cur = cn.cursor()
-            # Get unique chat_ids and the first message content as a "Title"
-            # (Simple logic: distinct IDs ordered by recent activity)
+            # Get unique chat_ids
             cur.execute("""
                 SELECT DISTINCT chat_id 
                 FROM dbo.chat_messages
             """)
             rows = cur.fetchall()
-            # Just returning IDs for now. 
-            # In a real startup, we'd join to get the "first message" as the title.
             return [str(r[0]) for r in rows]
     except Exception as e:
         print(f"❌ DB List Error: {e}")
         return []
 
-# ✅ UPDATED: Get full history for one chat
 def get_messages(chat_id):
     try:
         with get_conn() as cn:
@@ -86,15 +81,12 @@ def get_messages(chat_id):
     except Exception as e:
         print(f"❌ DB Read Error: {e}")
         return []
-    
-    # ... (keep existing imports and functions) ...
 
-# ✅ NEW: Fetch real database schema automatically
 def get_db_schema():
     try:
         with get_conn() as cn:
             cur = cn.cursor()
-            # This query asks SQL Server: "Give me all table names and their columns"
+            # Ask SQL Server for table names and columns
             cur.execute("""
                 SELECT 
                     t.name AS table_name,
@@ -105,7 +97,6 @@ def get_db_schema():
             """)
             rows = cur.fetchall()
             
-            # Format it into a string the LLM can read
             if not rows:
                 return "(No tables found in database)"
                 
@@ -117,10 +108,7 @@ def get_db_schema():
     except Exception as e:
         print(f"❌ DB Schema Error: {e}")
         return "(Schema unavailable)"
-    
-    # ... (existing code)
 
-# ✅ NEW: Safe SQL Executor
 def run_read_only_sql(query: str):
     # 1. Safety Filter: Block dangerous keywords
     forbidden = ["INSERT", "UPDATE", "DELETE", "DROP", "ALTER", "TRUNCATE", "CREATE", "GRANT", "EXEC"]
@@ -132,48 +120,44 @@ def run_read_only_sql(query: str):
             cur = cn.cursor()
             cur.execute(query)
             
-            # Get column names
-            columns = [column[0] for column in cur.description]
-            
-            # Get rows
-            rows = cur.fetchall()
-            
-            # Convert to list of dicts
-            results = []
-            for row in rows:
-                results.append(dict(zip(columns, row)))
-                
-            return {"columns": columns, "rows": results}
-    except Exception as e:
-        return {"error": str(e)}
-    
-    # ... (existing code)
-
-# ✅ NEW: Safe SQL Executor
-def run_read_only_sql(query: str):
-    # 1. Safety Filter: Block dangerous keywords
-    forbidden = ["INSERT", "UPDATE", "DELETE", "DROP", "ALTER", "TRUNCATE", "CREATE", "GRANT", "EXEC"]
-    if any(word in query.upper() for word in forbidden):
-        return {"error": "Safety Block: Only SELECT queries are allowed."}
-
-    try:
-        with get_conn() as cn:
-            cur = cn.cursor()
-            cur.execute(query)
-            
-            # Get column names
             if cur.description:
                 columns = [column[0] for column in cur.description]
-                # Get rows
                 rows = cur.fetchall()
-                
-                # Convert to list of dicts
                 results = []
                 for row in rows:
                     results.append(dict(zip(columns, row)))
-                    
                 return {"columns": columns, "rows": results}
             else:
                 return {"message": "Query executed successfully (no results)."}
     except Exception as e:
         return {"error": str(e)}
+
+# ✅ FIX 1: Missing Delete Chat Function
+def delete_chat(chat_id):
+    """
+    Deletes all messages associated with a specific chat_id.
+    """
+    try:
+        with get_conn() as cn:
+            cur = cn.cursor()
+            cur.execute("DELETE FROM dbo.chat_messages WHERE chat_id = ?", (str(chat_id),))
+            cn.commit()
+            return True
+    except Exception as e:
+        print(f"❌ DB Delete Error: {e}")
+        return False
+
+# ✅ FIX 2: Missing Delete All History Function (THIS CAUSED THE CRASH)
+def delete_all_history():
+    """
+    Deletes ALL messages from the database (Clear History).
+    """
+    try:
+        with get_conn() as cn:
+            cur = cn.cursor()
+            cur.execute("DELETE FROM dbo.chat_messages")
+            cn.commit()
+            return True
+    except Exception as e:
+        print(f"❌ DB Delete All Error: {e}")
+        return False
