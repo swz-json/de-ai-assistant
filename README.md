@@ -13,7 +13,8 @@
 
 [English](README.md) | [Documentation](docs/README_DOCS.md) | [Architecture](docs/ARCHITECTURE.md)
 
-<img width="1902" height="912" alt="dataais" src="https://github.com/user-attachments/assets/44b8d58d-2347-41e0-8269-8107d67a0bb9" />
+<img width="1917" height="903" alt="image" src="https://github.com/user-attachments/assets/f421f37c-f8bf-401d-bd7f-47e69b6498d8" />
+
 
 
 
@@ -131,5 +132,6 @@ Output Sanitization,HTML escaping prevents XSS in the frontend.
 
 ## Author: 
 **Wassim Elmoufakkir** *junior Data Engineer for AI*
+
 
 
