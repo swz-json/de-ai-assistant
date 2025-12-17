@@ -1,4 +1,4 @@
-﻿const $ = (id) => document.getElementById(id);
+const $ = (id) => document.getElementById(id);
 
 const messagesEl = $("messages");
 const inputEl = $("input");
@@ -10,7 +10,7 @@ const chatListEl = $("chatList");
 // 1. Recover existing chat_id from browser storage
 let chatId = localStorage.getItem("chat_id");
 
-// 2. Configure Marked.js to use Highlight.js
+// 2. Configure Marked.js to use Hiloaghlight.js
 marked.setOptions({
   highlight: function(code, lang) {
     const language = highlight.getLanguage(lang) ? lang : 'plaintext';
@@ -219,6 +219,7 @@ function addRunButtons(bubble) {
 //  UI & CHAT LOGIC
 // ---------------------------------------------------------
 
+// ✅ UPDATED: Sidebar with Delete Functionality
 async function loadSidebar() {
   try {
     const res = await fetch("/chats");
@@ -227,9 +228,43 @@ async function loadSidebar() {
     
     chats.forEach(c => {
       const div = document.createElement("div");
-      div.className = "chat-item"; 
-      div.textContent = c.title;
-      div.onclick = () => loadChat(c.id);
+      div.className = "chat-item";
+      
+      // We insert the Title AND the Delete Button
+      div.innerHTML = `
+        <span class="chat-title" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+            ${c.title}
+        </span>
+        <span class="delete-btn" title="Delete this chat">×</span>
+      `;
+
+      // 1. Logic for clicking the row (Loads the chat)
+      div.onclick = (e) => {
+        loadChat(c.id);
+      };
+
+      // 2. Logic for clicking the 'X' (Deletes the chat)
+      const delBtn = div.querySelector(".delete-btn");
+      delBtn.onclick = async (e) => {
+        e.stopPropagation(); // 🛑 STOP the click from loading the chat!
+        
+        if (!confirm("Are you sure you want to delete this chat?")) return;
+
+        try {
+          await fetch(`/chats/${c.id}`, { method: "DELETE" });
+          
+          // If we deleted the one we are looking at, switch to New Chat
+          if (chatId === c.id) {
+            newChatBtn.click();
+          }
+          
+          // Refresh the list to make it disappear
+          loadSidebar(); 
+        } catch (err) {
+          alert("Error deleting chat");
+        }
+      };
+
       chatListEl.appendChild(div);
     });
   } catch (e) {
