@@ -60,11 +60,41 @@ OLLAMA_MODEL="qwen2.5:7b"
 
 
 ## 💻 Usage
-###Start the Server
-####Run the FastAPI backend with Uvicorn:
+### Start the Server
+#### Run the FastAPI backend with Uvicorn:
 ```bash
 uvicorn app.api.main:app --reload
 ```
 
+## Access the Interface
++ Open your browser and navigate to: http://localhost:8000
+
+## Agent Commands
+### The assistant supports natural language, but also specific agentic triggers:
+
++ "Count records in [table]..." → Triggers SQL generation.
+
++ "Debug this error..." → Triggers RAG lookup.
+
++ "Write a dbt model..." → Triggers code generation mode.
+
+## 🏗️ Architecture
+### The system follows a modern **Agentic RAG** architecture:
+
+**1.** **User Input:** Captured via Vanilla JS Frontend.
+
+**2.** **Router:** FastAPI determines intent (SQL vs. Chat vs. Code).
+
+**3.** **Context Injection:**
+
+ **+ Memory:** Fetches last 10 messages from SQL Server.
+ 
+ **+ Schema:** Queries live DB metadata.
+ 
+ **+ Docs:** Queries ChromaDB vector store.
+
+**4.** **Inference:** Ollama processes the prompt + context.
+
+**5.** **Execution (Optional):** If SQL is generated, the "Run Query" button becomes active.
 
 
