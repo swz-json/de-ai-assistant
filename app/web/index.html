@@ -1,0 +1,56 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>DE AI Assistant</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="dot"></div>
+      <div>
+        <div class="title">DE AI Assistant</div>
+        <div class="subtitle">Airflow · dbt · BigQuery · SQL · DQ</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <select id="mode">
+        <option value="de">Data Engineering</option>
+        <option value="dbt">dbt</option>
+        <option value="sql">SQL</option>
+        <option value="airflow">Airflow</option>
+      </select>
+      <button id="newChat" class="btn secondary">New chat</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <aside class="sidebar">
+      <div class="section-title">Chats</div>
+      <div id="chatList" class="chat-list"></div>
+      <div class="hint">
+        Tip: use <kbd>Ctrl</kbd>+<kbd>Enter</kbd> to send
+      </div>
+    </aside>
+
+    <section class="chat">
+      <div id="messages" class="messages"></div>
+
+      <div class="composer">
+        <textarea id="input" rows="2" placeholder="Ask something about Airflow, dbt, BigQuery, SQL…"></textarea>
+        <button id="send" class="btn">Send</button>
+      </div>
+      <div id="status" class="status"></div>
+    </section>
+  </main>
+  
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>
