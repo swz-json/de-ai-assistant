@@ -1,15 +1,21 @@
 # app/api/router.py
 from app.rag.vectorstore import query_docs
 
+# app/api/router.py
+
+# ✅ UPDATED LIST: Added common action words
 DE_KEYWORDS = [
     "sql", "bigquery", "dbt", "airflow", "dag", "pipeline",
     "etl", "elt", "data quality", "dq", "schema",
     "partition", "cluster", "incremental", "model",
-    "warehouse", "dataset", "table"
+    "warehouse", "dataset", "table",
+    "count", "show", "list", "select", "data", "rows", "records", "query"
 ]
 
 META_KEYWORDS = ["purpose", "assistant", "conventions", "help", "what can you do", "scope"]
 SMALL_TALK = {"hi", "hello", "hey", "yo", "bonjour"}
+
+# ... (keep the rest of the file exactly the same)
 
 def _retrieve_context(user_message: str) -> str:
     res = query_docs(user_message, n_results=2)
