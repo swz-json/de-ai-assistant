@@ -44,3 +44,27 @@
 ```bash
 git clone [https://github.com/yourusername/de-ai-assistant.git](https://github.com/yourusername/de-ai-assistant.git)
 cd de-ai-assistant
+```
+
+### 2. Install Dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Configure Environment
+```bash
+MSSQL_CONN_STR="Driver={ODBC Driver 17 for SQL Server};Server=YOUR_SERVER;Database=DeAiAssistant;Trusted_Connection=yes;"
+OLLAMA_URL="[http://127.0.0.1:11434](http://127.0.0.1:11434)"
+OLLAMA_MODEL="qwen2.5:7b"
+```
+
+
+## 💻 Usage
+###Start the Server
+####Run the FastAPI backend with Uvicorn:
+```bash
+uvicorn app.api.main:app --reload
+```
+
+
+
