@@ -1,8 +1,8 @@
-﻿* { box-sizing: border-box; }
+* { box-sizing: border-box; }
 body { margin:0; font-family: system-ui, Arial; background:#0f1115; color:#e6e6e6; }
 .topbar { display:flex; justify-content:space-between; align-items:center; padding:14px 18px; border-bottom:1px solid #222; }
 .brand { display:flex; gap:12px; align-items:center; }
-.dot { width:10px; height:10px; border-radius:50%; background:#4ade80; }
+
 .title { font-weight:700; }
 .subtitle { opacity:.7; font-size:12px; margin-top:2px; }
 .layout { display:grid; grid-template-columns:280px 1fr; height: calc(100vh - 60px); }
@@ -66,4 +66,33 @@ textarea { flex:1; background:#151924; color:#e6e6e6; border:1px solid #2a2f3a; 
   padding: 2px 5px;
   border-radius: 4px;
   color: #ff79c6;
+}
+
+/* Remove the old .dot style if you want, or just add this: */
+
+/* ✅ PRO LOGO STYLING */
+.logo {
+  height: 42px !important;       /* Perfect size for a header */
+  width: auto;
+  margin-right: 15px;            /* Breathing room between logo and text */
+  border-radius: 8px;            /* Softens the sharp corners */
+  
+  /* Adds a subtle depth/glow behind the logo */
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3)); 
+  
+  /* Makes the hover animation smooth */
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+/* Interaction: Slight zoom and glow increase when touched */
+.logo:hover {
+  transform: scale(1.08);        /* Pops out slightly */
+  filter: drop-shadow(0 6px 12px rgba(59, 130, 246, 0.5)); /* Blue glow */
+}
+
+/* Ensure the container aligns everything perfectly */
+.brand {
+  display: flex;
+  align-items: center;
 }
