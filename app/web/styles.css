@@ -1,98 +1,213 @@
-* { box-sizing: border-box; }
-body { margin:0; font-family: system-ui, Arial; background:#0f1115; color:#e6e6e6; }
-.topbar { display:flex; justify-content:space-between; align-items:center; padding:14px 18px; border-bottom:1px solid #222; }
-.brand { display:flex; gap:12px; align-items:center; }
+/* =========================================
+   1. GLOBAL LAYOUT & SCROLL LOCK
+   ========================================= */
+   * { box-sizing: border-box; }
 
-.title { font-weight:700; }
-.subtitle { opacity:.7; font-size:12px; margin-top:2px; }
-.layout { display:grid; grid-template-columns:280px 1fr; height: calc(100vh - 60px); }
-.sidebar { border-right:1px solid #222; padding:14px; }
-.section-title { font-weight:700; margin-bottom:10px; }
-.chat { display:flex; flex-direction:column; }
-.messages { flex:1; padding:16px; overflow:auto; }
-.composer { display:flex; gap:10px; padding:12px; border-top:1px solid #222; }
-textarea { flex:1; background:#151924; color:#e6e6e6; border:1px solid #2a2f3a; border-radius:10px; padding:10px; resize:none; }
-.btn { background:#3b82f6; color:white; border:none; border-radius:10px; padding:10px 14px; cursor:pointer; }
-.btn.secondary { background:#2a2f3a; }
-.status { padding:10px 16px; opacity:.75; font-size:12px; }
-.msg { margin: 0 0 12px 0; }
-.msg .role { font-size:12px; opacity:.6; margin-bottom:4px; }
-.msg .bubble { background:#151924; border:1px solid #2a2f3a; border-radius:12px; padding:10px 12px; white-space:pre-wrap; }
-.chat-item { padding: 10px;border-bottom: 1px solid #333; cursor: pointer; color: #aaa;font-size: 14px;}
-.chat-item:hover {
-  background-color: #1f2937;
-  color: white;
-}
-.chat-item {
-  padding: 12px;
-  border-bottom: 1px solid #2a2f3a;
-  cursor: pointer;
-  color: #9ca3af;
-  font-size: 14px;
-  transition: background 0.2s;
-}
-
-.chat-item:hover {
-  background-color: #1f2937;
-  color: #fff;
-}
-
-/* Add to bottom of styles.css */
-
-/* Markdown Styles */
-.bubble p { margin: 0 0 10px 0; }
-.bubble p:last-child { margin: 0; }
-.bubble ul, .bubble ol { margin: 0 0 10px 0; padding-left: 20px; }
-.bubble h1, .bubble h2, .bubble h3 { margin-top: 0; font-size: 1.1em; }
-
-/* Code Blocks */
-.bubble pre {
-  background: #1e2227 !important;
-  padding: 12px;
-  border-radius: 8px;
-  overflow-x: auto;
-  margin: 10px 0;
-  border: 1px solid #2a2f3a;
-}
-
-.bubble code {
-  font-family: "Consolas", "Monaco", monospace;
-  font-size: 13px;
-}
-
-/* Inline code (like `table_name`) */
-.bubble :not(pre) > code {
-  background: rgba(255,255,255,0.1);
-  padding: 2px 5px;
-  border-radius: 4px;
-  color: #ff79c6;
-}
-
-/* Remove the old .dot style if you want, or just add this: */
-
-/* ✅ PRO LOGO STYLING */
-.logo {
-  height: 42px !important;       /* Perfect size for a header */
-  width: auto;
-  margin-right: 15px;            /* Breathing room between logo and text */
-  border-radius: 8px;            /* Softens the sharp corners */
-  
-  /* Adds a subtle depth/glow behind the logo */
-  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3)); 
-  
-  /* Makes the hover animation smooth */
-  transition: all 0.3s ease;
-  cursor: pointer;
-}
-
-/* Interaction: Slight zoom and glow increase when touched */
-.logo:hover {
-  transform: scale(1.08);        /* Pops out slightly */
-  filter: drop-shadow(0 6px 12px rgba(59, 130, 246, 0.5)); /* Blue glow */
-}
-
-/* Ensure the container aligns everything perfectly */
-.brand {
-  display: flex;
-  align-items: center;
-}
+   html, body {
+     height: 100vh;        /* Force screen height */
+     width: 100vw;
+     overflow: hidden;     /* Disable global scrollbar */
+     margin: 0;
+     font-family: system-ui, Arial, sans-serif;
+     background: #0f1115;
+     color: #e6e6e6;
+   }
+   
+   /* =========================================
+      2. HEADER (Fixed at top)
+      ========================================= */
+   .topbar {
+     height: 60px;
+     flex-shrink: 0;
+     display: flex;
+     justify-content: space-between;
+     align-items: center;
+     padding: 0 18px;
+     border-bottom: 1px solid #222;
+     background: #0f1115; /* Ensure opaque background */
+     z-index: 10;
+   }
+   
+   .brand { display: flex; align-items: center; }
+   .title { font-weight: 700; }
+   .subtitle { opacity: .7; font-size: 12px; margin-top: 2px; }
+   
+   /* =========================================
+      3. MAIN GRID (Sidebar + Chat)
+      ========================================= */
+   .layout {
+     /* Calculate remaining height explicitly */
+     height: calc(100vh - 60px);
+     display: grid;
+     grid-template-columns: 280px 1fr;
+   }
+   
+   /* =========================================
+      4. SIDEBAR (Scrolls independently)
+      ========================================= */
+   .sidebar {
+     border-right: 1px solid #222;
+     padding: 14px;
+     background: #0f1115;
+     overflow-y: auto;     /* Scroll only if list is long */
+     height: 100%;
+     display: flex;
+     flex-direction: column;
+   }
+   
+   .section-title { font-weight: 700; margin-bottom: 10px; }
+   
+   .chat-list {
+     flex: 1;
+     overflow-y: auto;
+   }
+   
+   /* Sidebar Items & Delete Button */
+   .chat-item {
+     display: flex;
+     justify-content: space-between;
+     align-items: center;
+     padding: 10px 12px;
+     border-bottom: 1px solid #2a2f3a;
+     cursor: pointer;
+     color: #9ca3af;
+     font-size: 14px;
+     transition: background 0.2s;
+   }
+   
+   .chat-item:hover {
+     background-color: #1f2937;
+     color: #fff;
+   }
+   
+   .delete-btn {
+     opacity: 0;
+     color: #ef4444;
+     font-weight: bold;
+     font-size: 16px;
+     padding: 2px 8px;
+     border-radius: 4px;
+     transition: opacity 0.2s, background 0.2s;
+   }
+   
+   .chat-item:hover .delete-btn { opacity: 1; }
+   .delete-btn:hover { background: rgba(239, 68, 68, 0.2); }
+   
+   .hint {
+     margin-top: 10px;
+     font-size: 12px;
+     opacity: 0.5;
+     text-align: center;
+   }
+   
+   /* =========================================
+      5. CHAT AREA (The main container)
+      ========================================= */
+   .chat {
+     display: flex;
+     flex-direction: column;
+     height: 100%;
+     overflow: hidden; /* Lock outer container */
+     position: relative;
+   }
+   
+   /* Messages Area (Scrolls independently) */
+   .messages {
+     flex: 1;
+     overflow-y: auto; /* Enable vertical scrolling */
+     padding: 20px;
+     scroll-behavior: smooth;
+   }
+   
+   /* Composer (Fixed at bottom) */
+   .composer {
+     flex-shrink: 0;
+     display: flex;
+     gap: 10px;
+     padding: 18px; /* Slightly larger area */
+     border-top: 1px solid #222;
+     background: #0f1115;
+   }
+   
+   textarea {
+     flex: 1;
+     background: #151924;
+     color: #e6e6e6;
+     border: 1px solid #2a2f3a;
+     border-radius: 10px;
+     padding: 12px;
+     resize: none;
+     font-family: inherit;
+   }
+   
+   textarea:focus { outline: 1px solid #3b82f6; }
+   
+   /* =========================================
+      6. COMPONENTS & MARKDOWN
+      ========================================= */
+   .btn {
+     background: #3b82f6;
+     color: white;
+     border: none;
+     border-radius: 10px;
+     padding: 10px 16px;
+     cursor: pointer;
+     font-weight: 600;
+   }
+   .btn:hover { opacity: 0.9; }
+   .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+   .btn.secondary { background: #2a2f3a; }
+   
+   .status { padding: 5px 16px; opacity: .75; font-size: 12px; text-align: right; }
+   
+   .msg { margin: 0 0 16px 0; max-width: 800px; }
+   .msg .role { font-size: 12px; opacity: .6; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+   
+   .msg .bubble {
+     background: #151924;
+     border: 1px solid #2a2f3a;
+     border-radius: 12px;
+     padding: 12px 16px;
+     line-height: 1.5;
+   }
+   
+   /* Markdown Formatting */
+   .bubble p { margin: 0 0 10px 0; }
+   .bubble p:last-child { margin: 0; }
+   .bubble ul, .bubble ol { margin: 0 0 10px 0; padding-left: 20px; }
+   .bubble h1, .bubble h2, .bubble h3 { margin-top: 0.5em; margin-bottom: 0.5em; color: #fff; }
+   
+   /* Code Blocks */
+   .bubble pre {
+     background: #0d1117 !important;
+     padding: 12px;
+     border-radius: 6px;
+     overflow-x: auto;
+     margin: 10px 0;
+     border: 1px solid #30363d;
+   }
+   .bubble code { font-family: "Consolas", "Monaco", monospace; font-size: 13px; }
+   .bubble :not(pre) > code {
+     background: rgba(255,255,255,0.1);
+     padding: 2px 5px;
+     border-radius: 4px;
+     color: #ff79c6;
+   }
+   
+   /* =========================================
+      7. LOGO STYLING
+      ========================================= */
+   .logo {
+     height: 42px !important;
+     width: auto;
+     margin-right: 15px;
+     border-radius: 8px;
+     filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+     transition: all 0.3s ease;
+     cursor: pointer;
+   }
+   
+   .logo:hover {
+     transform: scale(1.05);
+     filter: drop-shadow(0 6px 12px rgba(59, 130, 246, 0.5));
+   }
