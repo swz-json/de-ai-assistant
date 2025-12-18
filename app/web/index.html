@@ -1,60 +1,308 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>DE AI Assistant</title>
-  
-  <link rel="icon" type="image/png" href="/static/logo_dea.png" />
-  
-  <link rel="stylesheet" href="/static/styles.css?v=6" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DE AI Assistant</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+
+    <style>
+        /* --- LAYOUT RESET --- */
+        :root { --bg-dark: #090a0c; --glass-bg: rgba(20, 25, 35, 0.7); --glass-border: rgba(255, 255, 255, 0.08); --primary: #3b82f6; --text: #e6e6e6; }
+        * { box-sizing: border-box; }
+        html, body {
+            height: 100vh; width: 100vw; margin: 0; overflow: hidden;
+            font-family: 'Inter', system-ui, sans-serif;
+            background: radial-gradient(circle at top right, #1a202c, #090a0c); color: var(--text);
+            display: flex; flex-direction: column;
+        }
+
+        /* HEADER */
+        .topbar {
+            height: 60px; flex-shrink: 0; display: flex; justify-content: space-between; align-items: center;
+            padding: 0 20px; background: rgba(9, 10, 12, 0.8); backdrop-filter: blur(10px); border-bottom: 1px solid var(--glass-border);
+        }
+        .brand { display: flex; align-items: center; font-weight: 700; }
+        .logo { height: 32px; width: 32px; margin-right: 12px; }
+
+        /* MAIN LAYOUT */
+        .layout { flex: 1; display: grid; grid-template-columns: 260px 1fr; height: calc(100vh - 60px); overflow: hidden; }
+
+        /* SIDEBAR */
+        .sidebar {
+            border-right: 1px solid var(--glass-border); background: rgba(13, 15, 20, 0.6);
+            display: flex; flex-direction: column; overflow-y: auto; padding: 15px;
+        }
+        .chat-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px; margin-bottom: 5px; border-radius: 6px; cursor: pointer;
+            font-size: 13px; color: #9ca3af; transition: 0.2s; white-space: nowrap; overflow: hidden;
+        }
+        .chat-item:hover { background: rgba(255,255,255,0.05); color: white; }
+        .active-chat { background: rgba(59, 130, 246, 0.2); color: white; border: 1px solid rgba(59, 130, 246, 0.4); }
+        
+        /* DELETE BUTTON */
+        .delete-btn { opacity: 0; color: #ff5555; font-weight: bold; padding: 0 8px; transition: opacity 0.2s; font-size: 16px; }
+        .chat-item:hover .delete-btn { opacity: 1; }
+        .delete-btn:hover { color: #ff0000; transform: scale(1.2); }
+
+        /* CHAT AREA */
+        .chat { display: flex; flex-direction: column; height: 100%; overflow: hidden; position: relative; }
+        .messages { flex: 1; overflow-y: auto; min-height: 0; padding: 20px 40px; scroll-behavior: smooth; }
+        
+        .msg { margin-bottom: 25px; max-width: 850px; margin-left: auto; margin-right: auto; }
+        .msg .role { font-size: 11px; opacity: 0.5; margin-bottom: 5px; text-transform: uppercase; font-weight: bold; }
+        .msg .you .bubble { border-left: 2px solid var(--primary); padding-left: 15px; }
+
+        /* COMPOSER */
+        .composer {
+            flex-shrink: 0; padding: 20px; background: rgba(9, 10, 12, 0.95);
+            border-top: 1px solid var(--glass-border); max-width: 900px; width: 100%; margin: 0 auto;
+            display: flex; flex-direction: column; gap: 10px; box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
+        }
+        .chips-container { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 5px; }
+        .chip {
+            background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: #ccc;
+            padding: 5px 12px; border-radius: 15px; font-size: 12px; cursor: pointer; white-space: nowrap; transition: 0.2s;
+        }
+        .chip:hover { background: var(--primary); color: white; border-color: var(--primary); }
+        .input-group {
+            display: flex; gap: 10px; align-items: center; background: #151921;
+            border: 1px solid var(--glass-border); border-radius: 10px; padding: 8px;
+        }
+        textarea { flex: 1; background: transparent; border: none; color: #fff; outline: none; resize: none; font-family: inherit; }
+        .btn-send { background: var(--primary); color: white; border: none; width: 35px; height: 35px; border-radius: 8px; cursor: pointer; }
+
+        /* UTILS */
+        .result-wrapper { background: rgba(20,25,35,0.4); border: 1px solid #333; border-radius: 8px; padding: 15px; margin-top: 10px; }
+        .run-sql-btn { background: #2563eb; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; margin-top: 10px; }
+        .bubble pre { background: #111 !important; padding: 10px; border-radius: 6px; overflow-x: auto; }
+        .btn.secondary { background: rgba(255,255,255,0.1); color: #ccc; border: 1px solid var(--glass-border); padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+    </style>
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand">
-      <img src="/static/logo_dea.png" alt="DEA Logo" class="logo" style="height: 45px; width: auto; margin-right: 15px;" />
-      
-      <div>
-        <div class="title">DE AI Assistant</div>
-        <div class="subtitle">Airflow · dbt · BigQuery · SQL · DQ</div>
-      </div>
+
+    <div class="topbar">
+        <div class="brand">
+            <svg class="logo" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+            <div style="color:white; font-weight:bold;">DE AI Assistant</div>
+        </div>
+        <button id="newChat" class="btn secondary">New Chat</button>
     </div>
 
-    <div class="controls">
-      <select id="mode">
-        <option value="de">Data Engineering</option>
-        <option value="dbt">dbt</option>
-        <option value="sql">SQL</option>
-        <option value="airflow">Airflow</option>
-      </select>
-      <button id="newChat" class="btn secondary">New chat</button>
+    <div class="layout">
+        <div class="sidebar">
+            <div style="font-size:11px; text-transform:uppercase; color:#666; margin-bottom:10px; font-weight:bold;">History</div>
+            <div id="chatList" style="flex:1;"></div>
+        </div>
+
+        <div class="chat">
+            <div id="messages" class="messages"></div>
+            <div class="composer">
+                <div class="chips-container">
+                    <button class="chip" onclick="useChip('Count total customers')">👥 Count Customers</button>
+                    <button class="chip" onclick="useChip('Total sales by customer')">💰 Sales by Customer</button>
+                    <button class="chip" onclick="useChip('Show top 5 orders')">🏆 Top Orders</button>
+                    <button class="chip" onclick="useChip('List all tables')">🗂️ Schema</button>
+                </div>
+                <div class="input-group">
+                    <textarea id="input" placeholder="Ask your data..." rows="1"></textarea>
+                    <button id="send" class="btn-send">➤</button>
+                </div>
+            </div>
+        </div>
     </div>
-  </header>
 
-  <main class="layout">
-    <aside class="sidebar">
-      <div class="section-title">Chats</div>
-      <div id="chatList" class="chat-list"></div>
-      <div class="hint">
-        Tip: use <kbd>Ctrl</kbd>+<kbd>Enter</kbd> to send
-      </div>
-    </aside>
+    <script>
+        const $ = (id) => document.getElementById(id);
+        const messagesEl = $("messages");
+        const inputEl = $("input");
+        const sendBtn = $("send");
+        const newChatBtn = $("newChat");
+        const chatListEl = $("chatList");
+        let chatId = localStorage.getItem("chat_id");
 
-    <section class="chat">
-      <div id="messages" class="messages"></div>
+        // 👋 PROFESSIONAL WELCOME MESSAGE
+        const WELCOME_MSG = "👋 **Hello! I am your Data Engineering Assistant.**\n\nI can help you query your database, analyze results, or debug SQL issues.\n\nTry asking: **'Show top 5 orders'** or click a chip below.";
 
-      <div class="composer">
-        <textarea id="input" rows="2" placeholder="Ask something about Airflow, dbt, BigQuery, SQL…"></textarea>
-        <button id="send" class="btn">Send</button>
-      </div>
-      <div id="status" class="status"></div>
-    </section>
-  </main>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-  <script src="/static/app.js?v=4"></script>
+        function useChip(text) { inputEl.value = text; send(); }
+
+        function renderChart(container, data) {
+            const columns = data.columns;
+            const rows = data.rows;
+            if (rows.length === 0 || columns.length < 2) return;
+            let labelCol = columns.find(c => typeof rows[0][c] === 'string') || columns[0];
+            let dataCol = columns.find(c => typeof rows[0][c] === 'number');
+            if (!dataCol) return;
+            const labels = rows.map(r => r[labelCol]);
+            const values = rows.map(r => r[dataCol]);
+            const isDate = labels[0].match(/^\d{4}-\d{2}-\d{2}/) || labels[0].match(/\//);
+            
+            const canvas = document.createElement("canvas");
+            canvas.style.marginTop = "15px"; canvas.style.maxHeight = "250px"; 
+            container.appendChild(canvas);
+
+            new Chart(canvas, {
+                type: isDate ? 'line' : 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: dataCol, data: values,
+                        backgroundColor: 'rgba(59, 130, 246, 0.5)', borderColor: '#3b82f6', borderWidth: 1, tension: 0.4, fill: isDate
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#ccc' } } }, scales: { y: { grid: { color: '#333' } }, x: { grid: { color: '#333' } } } }
+            });
+        }
+
+        function downloadCSV(data) {
+            if (!data.rows || data.rows.length === 0) return;
+            const headers = data.columns.join(",");
+            const rows = data.rows.map(row => data.columns.map(col => `"${row[col]}"`).join(",")).join("\n");
+            const link = document.createElement("a");
+            link.href = encodeURI("data:text/csv;charset=utf-8," + headers + "\n" + rows);
+            link.download = "result.csv";
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
+        }
+
+        async function executeSql(query, btn) {
+            btn.disabled = true; btn.innerText = "Running...";
+            try {
+                const res = await fetch("/run-sql", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ query: query }) });
+                const data = await res.json();
+                const resultDiv = document.createElement('div');
+                resultDiv.className = 'result-wrapper';
+
+                if (data.error) {
+                    resultDiv.innerHTML = `<div style="color:#ff6b6b">❌ ${data.error}</div>`;
+                } else if (data.rows && data.rows.length > 0) {
+                    const headers = data.columns.map(c => `<th style="padding:5px; text-align:left; border-bottom:1px solid #444">${c}</th>`).join('');
+                    const rows = data.rows.map(r => `<tr>${data.columns.map(c => `<td style="padding:5px; border-bottom:1px solid #333; color:#aaa">${r[c]}</td>`).join('')}</tr>`).join('');
+                    resultDiv.innerHTML = `<div style="max-height:200px; overflow-y:auto;"><table style="width:100%; border-collapse:collapse; font-size:12px;"><thead><tr>${headers}</tr></thead><tbody>${rows}</tbody></table></div>`;
+                    renderChart(resultDiv, data);
+                    const csvBtn = document.createElement("button");
+                    csvBtn.innerText = "⬇ Download CSV"; csvBtn.style.cssText = "background:#333; color:#ccc; border:none; padding:5px 10px; margin-top:10px; border-radius:4px; cursor:pointer;";
+                    csvBtn.onclick = () => downloadCSV(data);
+                    resultDiv.appendChild(csvBtn);
+                } else {
+                    resultDiv.innerHTML = `<div style="color:#aaa">✅ Success (0 rows)</div>`;
+                }
+                if(btn.nextElementSibling?.classList.contains('result-wrapper')) btn.nextElementSibling.remove();
+                btn.after(resultDiv); btn.innerText = "▶ Run Again";
+            } catch (e) { alert(e); btn.innerText = "❌ Error"; } finally { btn.disabled = false; }
+        }
+
+        function enhanceMessage(bubble) {
+            bubble.querySelectorAll('pre code').forEach((block) => {
+                const pre = block.parentElement;
+                if (block.className.includes('language-sql') && !pre.nextElementSibling?.classList.contains('run-sql-btn')) {
+                    const btn = document.createElement('button');
+                    btn.className = 'run-sql-btn'; btn.innerText = '▶ Run Query';
+                    btn.onclick = () => executeSql(block.innerText, btn);
+                    pre.after(btn);
+                }
+                if (typeof highlight !== 'undefined') highlight.highlightElement(block);
+            });
+        }
+
+        async function send() {
+            const text = inputEl.value.trim();
+            if (!text) return;
+            addMsg("you", text);
+            inputEl.value = "";
+            const assistantBubble = addMsg("assistant", "...");
+            
+            try {
+                const res = await fetch("/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ message: text, chat_id: chatId }) });
+                const reader = res.body.getReader();
+                const decoder = new TextDecoder();
+                let currentAnswer = "";
+                assistantBubble.innerHTML = "";
+                
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    currentAnswer += decoder.decode(value, { stream: true });
+                    let clean = currentAnswer.replace(/^\s*\{.*?"scope".*?\}\s*/s, "");
+                    assistantBubble.innerHTML = marked.parse(clean);
+                    messagesEl.scrollTop = messagesEl.scrollHeight;
+                }
+                enhanceMessage(assistantBubble);
+                await loadSidebar(); 
+            } catch (e) { assistantBubble.innerHTML = "Error."; }
+        }
+
+        function addMsg(role, text) {
+            const div = document.createElement("div"); div.className = "msg " + role;
+            div.innerHTML = `<div class="role">${role}</div><div class="bubble">${role==="assistant" ? marked.parse(text) : text}</div>`;
+            messagesEl.appendChild(div);
+            messagesEl.scrollTop = messagesEl.scrollHeight;
+            return div.querySelector(".bubble");
+        }
+
+        async function loadSidebar() {
+            try {
+                const res = await fetch("/chats");
+                const chats = await res.json();
+                chatListEl.innerHTML = "";
+                chats.forEach(c => {
+                    const d = document.createElement("div"); 
+                    d.className = `chat-item ${c.id === chatId ? 'active-chat' : ''}`;
+                    const titleSpan = document.createElement("span");
+                    titleSpan.innerText = c.title;
+                    titleSpan.style.cssText = "white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1;";
+                    d.appendChild(titleSpan);
+                    const delBtn = document.createElement("span");
+                    delBtn.innerHTML = "&times;";
+                    delBtn.className = "delete-btn";
+                    delBtn.onclick = async (e) => {
+                        e.stopPropagation();
+                        await fetch(`/chats/${c.id}`, {method:"DELETE"}); 
+                        if(chatId === c.id) { 
+                            chatId = null; localStorage.removeItem("chat_id"); 
+                            messagesEl.innerHTML=""; 
+                            addMsg("assistant", WELCOME_MSG); 
+                        }
+                        loadSidebar(); 
+                    };
+                    d.appendChild(delBtn);
+                    d.onclick = () => { chatId = c.id; localStorage.setItem("chat_id", c.id); messagesEl.innerHTML=""; loadChat(c.id); loadSidebar(); };
+                    chatListEl.appendChild(d);
+                });
+                if (!chatId && chats.length > 0) {
+                    chatId = chats[0].id; localStorage.setItem("chat_id", chatId); loadSidebar();
+                }
+            } catch(e) {}
+        }
+
+        async function loadChat(id) {
+            const res = await fetch(`/chats/${id}`);
+            const data = await res.json();
+            data.messages.forEach(m => addMsg(m.role==="user"?"you":"assistant", m.content));
+        }
+
+        // --- NEW CHAT: SHOW WELCOME MESSAGE ---
+        newChatBtn.onclick = () => { 
+            chatId = null; 
+            localStorage.removeItem("chat_id"); 
+            messagesEl.innerHTML=""; 
+            addMsg("assistant", WELCOME_MSG); // <--- HERE IS THE GREETING
+            loadSidebar(); 
+        };
+        sendBtn.onclick = send;
+        inputEl.onkeydown = (e) => { if(e.key==="Enter" && !e.shiftKey) { e.preventDefault(); send(); }};
+        
+        // STARTUP
+        loadSidebar();
+        if (chatId) {
+            loadChat(chatId);
+        } else {
+            addMsg("assistant", WELCOME_MSG); // <--- INITIAL GREETING
+        }
+    </script>
 </body>
 </html>
