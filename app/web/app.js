@@ -14,13 +14,11 @@ let chatId = localStorage.getItem("chat_id");
 
 // 1. Post-Process: Adds Copy Buttons & Run Buttons to Code Blocks
 function enhanceMessage(bubble) {
-    // Find all code blocks
     const blocks = bubble.querySelectorAll('pre code');
-    
     blocks.forEach((block) => {
         const pre = block.parentElement;
         
-        // A. Add "Copy" Button (if not already there)
+        // A. Add "Copy" Button
         if (!pre.querySelector('.copy-btn')) {
             const copyBtn = document.createElement('button');
             copyBtn.className = 'copy-btn';
@@ -34,7 +32,6 @@ function enhanceMessage(bubble) {
         }
 
         // B. Add "Run Query" Button (Only for SQL)
-        // Checks if the class contains 'sql' (added by marked.js)
         if (block.className.includes('language-sql') && !pre.nextElementSibling?.classList.contains('run-sql-btn')) {
             const runBtn = document.createElement('button');
             runBtn.className = 'run-sql-btn';
@@ -43,15 +40,15 @@ function enhanceMessage(bubble) {
             pre.after(runBtn);
         }
 
-        // C. Apply Syntax Highlighting (if highlight.js is loaded)
+        // C. Apply Syntax Highlighting
         if (typeof highlight !== 'undefined') highlight.highlightElement(block);
     });
 }
 
-// 2. Execute SQL Function
+// 2. Execute SQL Function (Advanced Table Styling)
 async function executeSql(query, btn) {
     btn.disabled = true;
-    btn.textContent = "Running...";
+    btn.innerHTML = "⏳ Running...";
     
     try {
         const res = await fetch("/run-sql", {
@@ -61,37 +58,39 @@ async function executeSql(query, btn) {
         });
         const data = await res.json();
 
-        // Create a result table
+        // Create sleek result table container
         const resultDiv = document.createElement('div');
-        resultDiv.style.marginTop = "10px";
+        resultDiv.style.marginTop = "15px";
         resultDiv.style.overflowX = "auto";
+        resultDiv.style.borderRadius = "8px";
+        resultDiv.style.border = "1px solid #333";
         resultDiv.style.background = "#111";
-        resultDiv.style.padding = "10px";
-        resultDiv.style.borderRadius = "6px";
 
         if (data.error) {
-            resultDiv.innerHTML = `<span style="color:#ff5555">❌ ${data.error}</span>`;
+            resultDiv.innerHTML = `<div style="padding:10px; background:#3f1a1a; color:#ff8888;">❌ ${data.error}</div>`;
         } else if (data.rows && data.rows.length > 0) {
-            // Build Table
-            const headers = data.columns.map(c => `<th style="padding:5px; border-bottom:1px solid #444">${c}</th>`).join('');
-            const rows = data.rows.map(r => `<tr>${data.columns.map(c => `<td style="padding:5px; border-bottom:1px solid #333">${r[c]}</td>`).join('')}</tr>`).join('');
-            resultDiv.innerHTML = `<table style="width:100%; border-collapse:collapse; font-size:12px; color:#ddd"><thead><tr>${headers}</tr></thead><tbody>${rows}</tbody></table>`;
+            const headers = data.columns.map(c => `<th style="padding:8px; background:#222; text-align:left; border-bottom:1px solid #444; color:#fff;">${c}</th>`).join('');
+            const rows = data.rows.map(r => `<tr>${data.columns.map(c => `<td style="padding:8px; border-bottom:1px solid #333; color:#ccc;">${r[c]}</td>`).join('')}</tr>`).join('');
+            resultDiv.innerHTML = `<table style="width:100%; border-collapse:collapse; font-size:13px;"><thead><tr>${headers}</tr></thead><tbody>${rows}</tbody></table>`;
         } else {
-            resultDiv.innerHTML = `<span style="color:#aaa">✅ Query executed successfully (0 rows).</span>`;
+            resultDiv.innerHTML = `<div style="padding:10px; background:#222; color:#aaa;">✅ Query executed successfully (0 rows returned).</div>`;
         }
 
+        // Remove old result if exists
+        if(btn.nextElementSibling?.tagName === 'DIV') btn.nextElementSibling.remove();
+        
         btn.after(resultDiv);
-        btn.textContent = "✅ Ran Successfully";
+        btn.innerHTML = "▶ Run Again";
     } catch (e) {
         alert("Execution failed: " + e.message);
-        btn.textContent = "❌ Error";
+        btn.innerHTML = "❌ Error";
     } finally {
-        setTimeout(() => { btn.disabled = false; btn.textContent = "▶ Run Again"; }, 3000);
+        btn.disabled = false;
     }
 }
 
 // ---------------------------------------------------------
-//  STANDARD CHAT LOGIC (Optimized)
+//  CHAT LOGIC & SIDEBAR
 // ---------------------------------------------------------
 
 async function loadSidebar() {
@@ -117,21 +116,22 @@ async function loadChat(id) {
   chatId = id;
   localStorage.setItem("chat_id", id);
   messagesEl.innerHTML = "";
-  const res = await fetch(`/chats/${id}`);
-  const data = await res.json();
-  data.messages.forEach(m => addMsg(m.role==="user"?"you":"assistant", m.content));
+  try {
+    const res = await fetch(`/chats/${id}`);
+    const data = await res.json();
+    data.messages.forEach(m => addMsg(m.role==="user"?"you":"assistant", m.content));
+  } catch(e) {}
 }
 
 function addMsg(role, text) {
   const wrap = document.createElement("div");
   wrap.className = "msg";
-  wrap.innerHTML = `<div class="role">${role}</div><div class="bubble markdown-body"></div>`;
+  wrap.innerHTML = `<div class="role" style="font-weight:bold; margin-bottom:5px; color:#666; text-transform:uppercase; font-size:10px;">${role}</div><div class="bubble markdown-body"></div>`;
   const bubble = wrap.querySelector(".bubble");
   
-  // Render Markdown if assistant, else Plain Text
   if (role === "assistant") {
       bubble.innerHTML = marked.parse(text);
-      enhanceMessage(bubble); // ✨ Apply Pro Features
+      enhanceMessage(bubble);
   } else {
       bubble.textContent = text;
   }
@@ -141,6 +141,9 @@ function addMsg(role, text) {
   return bubble;
 }
 
+// ---------------------------------------------------------
+//  CORE SEND LOGIC (With Regex Cleaner 🧹)
+// ---------------------------------------------------------
 async function send() {
   const text = inputEl.value.trim();
   if (!text) return;
@@ -148,7 +151,8 @@ async function send() {
   addMsg("you", text);
   inputEl.value = "";
   sendBtn.disabled = true;
-  const assistantBubble = addMsg("assistant", "..."); // Placeholder
+  
+  const assistantBubble = addMsg("assistant", "..."); 
 
   try {
     const res = await fetch("/chat", {
@@ -159,17 +163,17 @@ async function send() {
 
     const contentType = res.headers.get("content-type");
 
-    // ⚡ CASE 1: Fast JSON (Welcome / Errors)
+    // CASE 1: Fast JSON Response
     if (contentType && contentType.includes("application/json")) {
         const data = await res.json();
         if (data.chat_id) { chatId = data.chat_id; localStorage.setItem("chat_id", chatId); }
         
         const cleanText = data.welcome_answer || data.answer || data.message || JSON.stringify(data);
         assistantBubble.innerHTML = marked.parse(cleanText);
-        enhanceMessage(assistantBubble); // ✨ Apply Pro Features
+        enhanceMessage(assistantBubble);
         loadSidebar();
     } 
-    // 🌊 CASE 2: Streaming Response
+    // CASE 2: Streaming Response
     else {
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
@@ -179,12 +183,16 @@ async function send() {
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
+          
           currentAnswer += decoder.decode(value, { stream: true });
-          assistantBubble.innerHTML = marked.parse(currentAnswer);
-          // Only enhance at the end to save performance, or periodically
+          
+          // 🧹 ULTRA-CLEANER: Removes {"chat_id":...} JSON header
+          let displayText = currentAnswer.replace(/^\s*\{.*?"scope".*?\}\s*/s, "");
+
+          assistantBubble.innerHTML = marked.parse(displayText);
           messagesEl.scrollTop = messagesEl.scrollHeight;
         }
-        enhanceMessage(assistantBubble); // ✨ Apply Pro Features (Final Pass)
+        enhanceMessage(assistantBubble); 
         loadSidebar();
     }
   } catch (e) {
@@ -194,9 +202,27 @@ async function send() {
   }
 }
 
-newChatBtn.onclick = () => { chatId = null; localStorage.removeItem("chat_id"); messagesEl.innerHTML=""; addMsg("assistant", "Hi! I'm ready."); loadSidebar(); };
-sendBtn.onclick = send;
-inputEl.onkeydown = (e) => { if(e.key==="Enter" && !e.shiftKey) { e.preventDefault(); send(); }};
+// ---------------------------------------------------------
+//  🚀 INIT & EVENT LISTENERS (Crucial Part!)
+// ---------------------------------------------------------
 
+newChatBtn.onclick = () => { 
+    chatId = null; 
+    localStorage.removeItem("chat_id"); 
+    messagesEl.innerHTML=""; 
+    addMsg("assistant", "Hi! I'm ready."); 
+    loadSidebar(); 
+};
+
+sendBtn.onclick = send;
+
+inputEl.onkeydown = (e) => { 
+    if(e.key==="Enter" && !e.shiftKey) { 
+        e.preventDefault(); 
+        send(); 
+    }
+};
+
+// Start the app
 loadSidebar();
 if (chatId) loadChat(chatId);
