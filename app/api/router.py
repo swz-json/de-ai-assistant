@@ -32,11 +32,11 @@ def _retrieve_context(user_message: str) -> str:
 
     return "\n\n---\n\n".join(chunks)
 
+# app/api/router.py
+
 def route_intent(message: str):
     msg = message.strip().lower()
-    context = _retrieve_context(message)
-
-    # 👋 greetings
+    # 1. ⚡ FAST CHECK: Is it a greeting? (Do this FIRST)
     if msg in SMALL_TALK:
         return {
             "scope": "welcome",
@@ -47,19 +47,18 @@ def route_intent(message: str):
                 "- Airflow DAGs\n"
                 "- dbt models & tests\n"
                 "- BigQuery SQL & optimization\n"
-                "- Data quality & pipelines\n\n"
-                "Try asking:\n"
-                "• `How do I build an incremental dbt model?`\n"
-                "• `Explain Airflow DAG retries`\n"
-                "• `Optimize this BigQuery query`"
+                "- Data quality & pipelines"
             )
         }
+
+    # 2. 🐢 SLOW CHECK: Only run RAG if it's NOT a greeting
+    context = _retrieve_context(message)
 
     # meta questions
     if any(k in msg for k in META_KEYWORDS):
         return {"scope": "meta", "context": context}
 
-    # guardrail (allow if RAG found context anyway)
+    # guardrail
     if not any(k in msg for k in DE_KEYWORDS) and not context:
         return {"scope": "out_of_scope", "context": ""}
 
