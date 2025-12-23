@@ -130,12 +130,8 @@ Output Sanitization,HTML escaping prevents XSS in the frontend.
 ```
 
 
-## 👤 Author
+<div align="center"> <sub>Développé par <b>Wassim Elmoufakkir</b></sub> </div>
 
-**Wassim Elmoufakkir**
-21 yo
-France
-MSc Data Engineering for Artificial Intelligence
 
 
 
