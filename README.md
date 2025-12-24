@@ -20,7 +20,7 @@
 
 </div>
 
-## 📋 Requirements
+## Requirements
 
 - **Python:** 3.10 or higher
 - **Database:** Microsoft SQL Server (Local or Azure)
@@ -28,7 +28,7 @@
 - **Driver:** ODBC Driver 17 for SQL Server
 - **Vector Store:** ChromaDB (Embedded)
 
-## ⚡ Capabilities Matrix
+## Capabilities Matrix
 
 | Feature | Description | Status |
 | :--- | :--- | :---: |
@@ -39,7 +39,7 @@
 | **Memory** | Persists conversation history in SQL Server | ✅ |
 | **Privacy** | 100% Local inference (No data leaves your network) | ✅ |
 
-## 🚀 Installation
+## Installation
 
 ### 1. Clone the repository
 ```bash
@@ -60,7 +60,7 @@ OLLAMA_MODEL="qwen2.5:7b"
 ```
 
 
-## 💻 Usage
+## Usage
 ### Start the Server
 #### Run the FastAPI backend with Uvicorn:
 ```bash
@@ -79,7 +79,7 @@ uvicorn app.api.main:app --reload
 
 + "Write a dbt model..." → Triggers code generation mode.
 
-## 🏗️ Architecture
+## Architecture
 ### The system follows a modern **Agentic RAG** architecture:
 
 **1.** **User Input:** Captured via Vanilla JS Frontend.
@@ -99,7 +99,7 @@ uvicorn app.api.main:app --reload
 
 **5.** **Execution (Optional):** If SQL is generated, the "Run Query" button becomes active.
 
-## 🛠️ Development
+## Development
 ```bash
 # Install development tools
 pip install pytest black flake8
@@ -121,7 +121,7 @@ de-ai-assistant/
 └── main.py           # Entry point
 ```
 
-## 🔒 Security Guardrails
+## Security Guardrails
 ```bash
 Guardrail,Implementation
 SQL Safety,"Regex blocks on DROP, DELETE, UPDATE, ALTER."
