@@ -39,7 +39,7 @@
 | **Memory** | Persists conversation history in SQL Server | ✅ |
 | **Privacy** | 100% Local inference (No data leaves your network) | ✅ |
 
-## Installation
+## Installation :
 
 ### 1. Clone the repository
 ```bash
